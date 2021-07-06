@@ -1,5 +1,6 @@
 # node-with-express-and-ejs
-
+組織結構
+```
 |-- root
     |-- app.js
     |-- hello.js
@@ -22,3 +23,4 @@
         |-- partial
             |-- footer.ejs
             |-- header.ejs
+```
