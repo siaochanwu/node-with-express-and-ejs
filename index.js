@@ -1,21 +1,36 @@
 const express = require('express')
 const engine = require('ejs-locals')
+const firebase = require('firebase')
 const app = express()
 app.use(express.static('public'))//靜態檔案的資料夾名稱傳遞給 express.static 中介軟體
 // app.use('/static', express.static('public'));//建立虛擬路徑/static
 // app.use('/static', express.static(__dirname + '/public'));//利用__dirname設定對路徑
+app.use(express.urlencoded({//middleware程式碼，這樣才能抓倒頁面資料
+    extended: false
+}))
 
 app.engine('ejs',engine)
 app.set('views', './views')
 app.set('view engine', 'ejs')
 
+firebase.initializeApp({
+    databaseURL: "https://myproject-1153b-default-rtdb.asia-southeast1.firebasedatabase.app"
+});
+var db = firebase.database()
+
 app.get('/', (req,res) => {
-    res.render('index',{
-        'title': '首頁',
-        'subtitle': '<h2>subtitle</h2>',
-        'show': false,
-        'food': ['apple', 'banana', 'watermelon']
+    db.ref('todos').once('value', function(snapshot){
+        var data = snapshot.val()
+        res.render('index',{
+            'title': '首頁',
+            'todolist': data
+
+            
+        })
     })
+    
+
+
 })
 app.get('/about', (req,res) => {
     res.render('about', {
@@ -44,6 +59,24 @@ app.get('/product', (req,res) => {
 //         'title':'user page'
 //     })
 // })
+
+app.post('/create-item', function (req, res) {
+    console.log(req.body.item)
+    let item = req.body.item
+    let fireData = firebase.database()//建立子路徑
+    let itemRef = fireData.ref('todos').push()//設定Firebase資料庫的路徑 路徑名為todos
+    itemRef.set({
+        "item": item
+    }).then(function(){
+        db.ref('todos').once('value', function(snapshot){//once 讀取資料
+            res.send(snapshot.val())
+            // console.log(snapshot.val())
+            
+        })
+    })
+    res.redirect('/')
+    // res.send("Thank for submit the form")
+})
 
 const port = 3000
 app.listen(port, function() {
