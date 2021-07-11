@@ -1,6 +1,7 @@
 const express = require('express')
 const engine = require('ejs-locals')
 const firebase = require('firebase')
+
 const app = express()
 app.use(express.static('public'))//靜態檔案的資料夾名稱傳遞給 express.static 中介軟體
 // app.use('/static', express.static('public'));//建立虛擬路徑/static
@@ -8,6 +9,7 @@ app.use(express.static('public'))//靜態檔案的資料夾名稱傳遞給 expre
 app.use(express.urlencoded({//middleware程式碼，這樣才能抓倒頁面資料
     extended: false
 }))
+app.use(express.json())
 
 app.engine('ejs',engine)
 app.set('views', './views')
@@ -76,6 +78,23 @@ app.post('/create-item', function (req, res) {
     })
     res.redirect('/')
     // res.send("Thank for submit the form")
+})
+
+app.post('/update-item', function(req, res) {
+    let id = req.body.id
+    let dbRef = db.ref('todos/'+ id)
+    dbRef.update({
+        item: req.body.text
+    })
+    console.log(req.body.text)
+    res.send('update success')
+})
+
+app.post('/delete-item', function(req, res) {
+    let id = req.body.id
+    let dbRef = db.ref('todos/'+ id)
+    dbRef.remove()
+    res.send('delete success')
 })
 
 const port = 3000
